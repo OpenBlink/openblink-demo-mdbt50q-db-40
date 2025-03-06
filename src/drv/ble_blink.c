@@ -246,15 +246,17 @@ static struct bt_gatt_attr attrs[] = {
     BT_GATT_CHARACTERISTIC(BT_UUID_OPEN_BLINK_CONSOLE_CHARACTERISTIC_UUID,
                            BT_GATT_CHRC_NOTIFY, BT_GATT_PERM_NONE, NULL, NULL,
                            NULL),
-    BT_GATT_CCC(on_cccd_changed, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
+    BT_GATT_CCC(on_cccd_changed,
+                BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
     // Program: 4, [5]
     BT_GATT_CHARACTERISTIC(BT_UUID_OPEN_BLINK_PROGRAM_CHARACTERISTIC_UUID,
                            BT_GATT_CHRC_WRITE | BT_GATT_CHRC_WRITE_WITHOUT_RESP,
-                           BT_GATT_PERM_WRITE, NULL, blink_write_program, NULL),
+                           BT_GATT_PERM_WRITE_ENCRYPT, NULL,
+                           blink_write_program, NULL),
     // MTU: 6, [7]
     BT_GATT_CHARACTERISTIC(BT_UUID_OPEN_BLINK_STATUS_CHARACTERISTIC_UUID,
-                           BT_GATT_CHRC_READ, BT_GATT_PERM_READ, blink_read_mtu,
-                           NULL, NULL),
+                           BT_GATT_CHRC_READ, BT_GATT_PERM_READ_ENCRYPT,
+                           blink_read_mtu, NULL, NULL),
 };
 
 #define SERVICE_BLINK_CONSOLE 2  // [2]

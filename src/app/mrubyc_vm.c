@@ -12,12 +12,16 @@
 #include <zephyr/logging/log.h>
 
 #include "../../mrubyc/src/mrubyc.h"
+#include "../api/adc.h"
 #include "../api/api.h"
 #include "../api/ble.h"
 #include "../api/blink.h"
+#include "../api/i2c.h"
 #include "../api/input.h"
 #include "../api/led.h"
+#include "../api/pwm.h"
 #include "../api/symbol.h"
+#include "../api/temperature.h"
 #include "../drv/ble.h"
 #include "../lib/fn.h"
 #include "../rb/slot1.h"
@@ -27,8 +31,8 @@
 
 LOG_MODULE_REGISTER(app_mrubyc_vm, LOG_LEVEL_DBG);
 
-#define MRBC_HEAP_MEMORY_SIZE (15 * 1024)
-#define MRUBYC_VM_MAIN_STACK_SIZE (50 * 1024)
+#define MRBC_HEAP_MEMORY_SIZE (48 * 1024)
+#define MRUBYC_VM_MAIN_STACK_SIZE (96 * 1024)
 
 static bool request_mruby_reload = false;
 static void load_bytecode(const blink_slot_t kSlot, uint8_t *const bytecode,
@@ -71,10 +75,14 @@ static void mrubyc_vm_main(void *, void *, void *) {
       LOG_ERR("Failed to define symbol");
     }
     // Class, Method
-    api_led_define();    // LED.*
-    api_input_define();  // Input.*
-    api_ble_define();    // BLE.*
-    api_blink_define();  // Blink.*
+    api_led_define();          // LED.*
+    api_input_define();        // Input.*
+    api_ble_define();          // BLE.*
+    api_blink_define();        // Blink.*
+    api_temperature_define();  // Temperature.*
+    api_adc_define();          // ADC.*
+    api_pwm_define();          // PWM.*
+    api_i2c_define();          // I2C.*
 
     ////////////////////
     // Clear reload request flag
@@ -88,6 +96,7 @@ static void mrubyc_vm_main(void *, void *, void *) {
     ////////////////////
     // mruby/c create task
     tcb[0] = mrbc_create_task(bytecode_slot1, NULL);
+    api_api_set_systemtask(tcb[0]->vm.vm_id, bytecode_slot1, NULL);
     tcb[1] = mrbc_create_task(bytecode_slot2, NULL);
     if ((tcb[0] == NULL) || (tcb[1] == NULL)) {
       LOG_ERR("Failed to create task");
@@ -109,6 +118,8 @@ static void mrubyc_vm_main(void *, void *, void *) {
              "mrbc_run Stopped (uptime: %lli ms)\n",
              k_uptime_delta(&timestamp));
     ble_print(buf_blink_time);
+
+    api_blink_init();
 
     ////////////////////
     // mruby/c cleanup

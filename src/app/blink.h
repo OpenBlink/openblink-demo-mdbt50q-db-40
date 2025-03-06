@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 
-#define BLINK_MAX_BYTECODE_SIZE (4016)
+#define BLINK_MAX_BYTECODE_SIZE (8000 * 2)
 #define BLINK_DEVICE_NAME_SIZE (sizeof(CONFIG_BT_DEVICE_NAME) + 1 + 4 + 1)
 
 typedef enum {

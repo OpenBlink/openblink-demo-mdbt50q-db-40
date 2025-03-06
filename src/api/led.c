@@ -66,9 +66,11 @@ static void c_set_led(mrb_vm *vm, mrb_value *v, int argc) {
     drv_gpio_set(kDrvGpioLED2, req);
     SET_TRUE_RETURN();
   }
-  // LED3
-  if (api_symbol_get_id(kSymbolLED3) == tgt) {
-    drv_gpio_set(kDrvGpioLED3, req);
-    SET_TRUE_RETURN();
+  // LED3 (only for system task)
+  if (kSuccess == api_api_check_systemtask(vm->vm_id)) {
+    if (api_symbol_get_id(kSymbolLED3) == tgt) {
+      drv_gpio_set(kDrvGpioLED3, req);
+      SET_TRUE_RETURN();
+    }
   }
 }

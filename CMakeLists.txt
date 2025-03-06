@@ -8,19 +8,29 @@ target_sources(app PRIVATE
                     src/main.c
                     src/app/blink.c
                     src/app/comm.c
+                    src/app/config.c
                     src/app/init.c
                     src/app/mrubyc_vm.c
                     src/app/storage.c
+                    src/app/watchdog.c
+                    src/api/adc.c
                     src/api/api.c
                     src/api/ble.c
                     src/api/blink.c
+                    src/api/i2c.c
                     src/api/input.c
                     src/api/led.c
+                    src/api/pwm.c
                     src/api/symbol.c
+                    src/api/temperature.c
+                    src/drv/hal/die_temperature.c
+                    src/drv/adc.c
                     src/drv/ble.c
                     src/drv/ble_blink.c
                     src/drv/gpio.c
+                    src/drv/pwm.c
                     src/lib/mrubyc/hal.c
+                    src/lib/hmac-sha256.c
                     mrubyc/src/alloc.c
                     mrubyc/src/c_array.c
                     mrubyc/src/c_hash.c

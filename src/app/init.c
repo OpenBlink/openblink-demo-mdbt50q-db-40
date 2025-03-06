@@ -11,16 +11,21 @@
 #include <zephyr/settings/settings.h>
 #include <zephyr/sys/reboot.h>
 
+#include "../api/blink.h"
+#include "../api/i2c.h"
 #include "../api/symbol.h"
+#include "../drv/adc.h"
 #include "../drv/gpio.h"
 #include "../lib/fn.h"
 #include "app_version.h"
 #include "blink.h"
 #include "comm.h"
+#include "config.h"
 #include "mrubyc_vm.h"
 #include "ncs_version.h"
 #include "storage.h"
 #include "version.h"
+#include "watchdog.h"
 
 LOG_MODULE_REGISTER(app_init, LOG_LEVEL_DBG);
 
@@ -54,14 +59,18 @@ static int init_main(void) {
 
   // ==============================
   // Initialize
-  LOG_INF("zms_storage init");
+  ret = (kSuccess != watchdog_init()) ? kFailure : ret;
+  ret = (kSuccess != api_blink_init()) ? kFailure : ret;
+  LOG_INF("nvs_storage init");
   ret = (kSuccess != storage_init()) ? kFailure : ret;
   LOG_INF("settings_storage init");
   ret = (0 != settings_subsys_init()) ? kFailure : ret;
   storage_free_space();
-  LOG_INF("ZMS storage max data size: %zu", storage_maximum_data_size());
+  ret = (kSuccess != config_init()) ? kFailure : ret;
   ret = (kSuccess != api_symbol_init()) ? kFailure : ret;
+  ret = (kSuccess != api_i2c_init()) ? kFailure : ret;
   ret = (kSuccess != drv_gpio_init()) ? kFailure : ret;
+  ret = (kSuccess != drv_adc_init()) ? kFailure : ret;
   ret = (kSuccess != comm_init()) ? kFailure : ret;
 
   // ==============================
@@ -81,7 +90,8 @@ fn_t init_reboot(void) {
   LOG_WRN("Rebooting...");
   // Reboot
   for (uint8_t i = 0; 10 > i; i++) {
-    if (0 == k_mutex_lock(&mutex_storage, K_MSEC(100))) {
+    if ((0 == settings_save()) &&
+        (0 == k_mutex_lock(&mutex_storage, K_MSEC(100)))) {
       sys_reboot(SYS_REBOOT_WARM);
       k_msleep(100);
       k_mutex_unlock(&mutex_storage);

@@ -26,6 +26,5 @@ ssize_t storage_write(const storage_id_t kId, const void *const kData,
 ssize_t storage_get_data_length(const storage_id_t kId);
 int storage_delete(const storage_id_t kId);
 ssize_t storage_free_space(void);
-ssize_t storage_maximum_data_size(void);
 
 #endif  // APP_STORAGE_H

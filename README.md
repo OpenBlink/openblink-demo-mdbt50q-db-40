@@ -1,4 +1,4 @@
-# OpenBlink
+# OpenBlink Demo MDBT50Q-DB-40
 
 _Towards a programmable world that changes in the blink of an eye._
 
@@ -15,7 +15,7 @@ _Towards a programmable world that changes in the blink of an eye._
 To clone the repository and initialize the submodules, run the following commands:
 
 ```console
-$ git clone https://github.com/OpenBlink/openblink.git
+$ git clone https://github.com/OpenBlink/openblink-demo-mdbt50q-db-40.git
 $ git submodule init
 $ git submodule update
 ```
@@ -24,8 +24,7 @@ $ git submodule update
 
 The following hardware platforms have been tested with OpenBlink:
 
-- Nordic nRF54L15-DK (Board target: nrf54l15dk/nrf54l15/cpuapp)
-- Nordic nRF52840-DK (Board target: nrf52840dk/nrf52840)
+- Raytac MDBT50Q-DB-40 (Board target: raytac_mdbt50q_db_40/nrf52840)
 
 ## Development Environment Versions
 

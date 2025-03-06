@@ -10,6 +10,7 @@
 #include "../../mrubyc/src/mrubyc.h"
 #include "../drv/gpio.h"
 #include "../lib/fn.h"
+#include "api.h"
 #include "symbol.h"
 
 LOG_MODULE_REGISTER(api_input, LOG_LEVEL_DBG);
@@ -20,6 +21,7 @@ static drv_gpio_t sym_to_gpio(const int16_t kSymbol);
 // forward declaration
 static void c_get_sw_pressed(mrb_vm *vm, mrb_value *v, int argc);
 static void c_get_sw_released(mrb_vm *vm, mrb_value *v, int argc);
+static void c_sw1_read(mrb_vm *vm, mrb_value *v, int argc);
 
 // **************************************************************************
 // api_input_define
@@ -28,6 +30,9 @@ fn_t api_input_define(void) {
   class_input = mrbc_define_class(0, "Input", mrbc_class_object);
   mrbc_define_method(0, class_input, "pressed?", c_get_sw_pressed);
   mrbc_define_method(0, class_input, "released?", c_get_sw_released);
+  if (kSuccess == api_api_get_allow_expert_api()) {
+    mrbc_define_method(0, class_input, "sw1_read", c_sw1_read);
+  }
   return kSuccess;
 }
 
@@ -83,6 +88,12 @@ static void c_get_sw_released(mrb_vm *vm, mrb_value *v, int argc) {
   if (false == drv_gpio_get(sym_to_gpio(tgt))) {
     SET_TRUE_RETURN();
   }
+}
+
+// **************************************************************************
+// c_sw1_read
+static void c_sw1_read(mrb_vm *vm, mrb_value *v, int argc) {
+  SET_INT_RETURN(1);  // DUMMY
 }
 
 // **************************************************************************
