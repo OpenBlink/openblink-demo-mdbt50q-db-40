@@ -122,12 +122,6 @@ static void c_sw1_read(mrb_vm *vm, mrb_value *v, int argc) {
   SET_INT_RETURN(1);  // DUMMY
 }
 
-// **************************************************************************
-// c_sw1_read
-static void c_sw1_read(mrb_vm *vm, mrb_value *v, int argc) {
-  SET_INT_RETURN(1);  // DUMMY
-}
-
 /**
  * @brief Converts a symbol ID to the corresponding GPIO enum
  *

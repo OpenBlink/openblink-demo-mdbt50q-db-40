@@ -103,65 +103,6 @@ static void c_sample_array3(mrb_vm *vm, mrb_value *v, int argc) {
   SET_RETURN(ret);
 }
 
-// **************************************************************************
-// c_sample_string
-static void c_sample_string(mrb_vm *vm, mrb_value *v, int argc) {
-  char tmp_char[255];
-  size_t tmp_size = 0;
-
-  if (MRBC_TT_STRING == v[1].tt) {
-    uint8_t *string = v[1].string->data;
-    for (size_t i = 0; i < sizeof(tmp_char) / sizeof(tmp_char[0]); i++) {
-      if ((i == v[1].string->size) || ('\0' == string[i])) {
-        tmp_size = i;
-        break;
-      }
-      tmp_char[i] = (char)string[i];
-    }
-  }
-}
-
-// **************************************************************************
-// c_sample_array
-static void c_sample_array(mrb_vm *vm, mrb_value *v, int argc) {
-  uint8_t array[3] = {0};
-  if (MRBC_TT_ARRAY == v[1].tt) {
-    if (3 != v[1].array->n_stored) return;
-    for (size_t i = 0; i < 3; i++) {
-      array[i] = (uint8_t)v[1].array->data[i].i;
-    }
-  }
-}
-
-// **************************************************************************
-// c_sample_array2
-static void c_sample_array2(mrb_vm *vm, mrb_value *v, int argc) {
-  uint8_t c_array[3] = {0};
-  if (MRBC_TT_ARRAY == v[1].tt) {
-    if (3 == v[1].array->n_stored) {
-      mrb_value mrbc_array = GET_ARY_ARG(1);
-      for (size_t i = 0; i < 3; i++) {
-        mrb_value value = mrbc_array_get(&mrbc_array, i);
-        c_array[i] = value.i;
-      }
-    }
-  }
-}
-
-// **************************************************************************
-// c_sample_array3
-static void c_sample_array3(mrb_vm *vm, mrb_value *v, int argc) {
-  float tmp[3] = {0.0f, 1.0f, 3.14f};
-  mrb_value ret = mrbc_array_new(vm, 3);
-
-  for (int i = 0; i < 3; i++) {
-    mrb_value v = mrbc_float_value(vm, tmp[i]);
-    mrbc_array_set(&ret, i, &v);
-  }
-
-  SET_RETURN(ret);
-}
-
 /**
  * @brief Gets the reload status from the mruby/c VM
  *

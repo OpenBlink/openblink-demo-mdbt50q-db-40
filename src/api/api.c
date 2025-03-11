@@ -19,8 +19,6 @@ LOG_MODULE_REGISTER(api_api, LOG_LEVEL_DBG);
 
 static uint8_t system_task_vmid = 0U;
 
-static uint8_t system_task_vmid = 0U;
-
 /**
  * @brief Converts mruby/c boolean type to C boolean
  *
