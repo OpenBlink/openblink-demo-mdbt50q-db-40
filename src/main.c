@@ -45,8 +45,8 @@ int main(void) {
  *
  * @details Monitors SW1 and SW4 buttons. If both are pressed for a certain
  * duration, it triggers a factory reset and reboots the device.
- *          - 5-10 seconds: LED2 blinks to indicate pending factory reset
- *          - >10 seconds: Factory reset is performed, LED2 stays on for 1
+ *          - 3-5 seconds: LED2 blinks to indicate pending factory reset
+ *          - >5 seconds: Factory reset is performed, LED2 stays on for 1
  * second
  */
 static void judge_factory_reset(void) {
