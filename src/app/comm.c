@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file comm.c
+ * @brief Implementation of communication management
+ * @details Implements BLE communication functions and event handling
+ */
 #include "comm.h"
 
 #include <math.h>
@@ -24,11 +29,18 @@
 
 LOG_MODULE_REGISTER(app_comm, LOG_LEVEL_DBG);
 
+/** @brief Flag indicating if BLE advertising is active */
 static volatile bool advertising = false;
+
+/** @brief Flag indicating if BLE is connected to a device */
 static volatile bool connected = false;
 
-// **************************************************************************
-// ble_event_cb
+/**
+ * @brief BLE event callback function
+ *
+ * @param param BLE event parameters
+ * @return int 0 on success, negative on error
+ */
 static int ble_event_cb(BLE_PARAM *param) {
   int err = 0;
   switch (param->event) {
@@ -93,8 +105,13 @@ static int ble_event_cb(BLE_PARAM *param) {
   return err;
 }
 
-// **************************************************************************
-// comm_init
+/**
+ * @brief Initializes the communication subsystem
+ *
+ * @details Sets up BLE, configures the device name, and starts advertising
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t comm_init(void) {
   fn_t ret = kSuccess;
   char device_name[BLINK_DEVICE_NAME_SIZE] = {0};
@@ -114,16 +131,27 @@ fn_t comm_init(void) {
   return ret;
 }
 
-// **************************************************************************
-// comm_get_advertising
+/**
+ * @brief Checks if BLE advertising is active
+ *
+ * @return true if advertising is active
+ * @return false if advertising is not active
+ */
 bool comm_get_advertising(void) { return advertising; }
 
-// **************************************************************************
-// comm_get_connected
+/**
+ * @brief Checks if BLE is connected to a device
+ *
+ * @return true if connected
+ * @return false if not connected
+ */
 bool comm_get_connected(void) { return connected; }
 
-// **************************************************************************
-// comm_disconnect
+/**
+ * @brief Disconnects the current BLE connection
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t comm_disconnect(void) {
   LOG_DBG("COMM: Disconnecting...");
   ble_print("Disconnecting...");

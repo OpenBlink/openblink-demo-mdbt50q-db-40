@@ -2,6 +2,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file main.c
+ * @brief Main entry point for the OpenBlink firmware
+ * @details This file contains the main function and factory reset detection
+ * logic
+ */
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -19,8 +25,11 @@ LOG_MODULE_REGISTER(main, LOG_LEVEL_DBG);
 static void judge_factory_reset(void);
 static void debug_lib_hmac(void);
 
-// **************************************************************************
-// main
+/**
+ * @brief Main function of the OpenBlink firmware
+ *
+ * @return EXIT_FAILURE if the program exits unexpectedly
+ */
 int main(void) {
   debug_lib_hmac();
   while (1) {
@@ -31,8 +40,15 @@ int main(void) {
   return EXIT_FAILURE;
 }
 
-// **************************************************************************
-// judge_factory_reset
+/**
+ * @brief Detects if factory reset is requested by monitoring button presses
+ *
+ * @details Monitors SW1 and SW4 buttons. If both are pressed for a certain
+ * duration, it triggers a factory reset and reboots the device.
+ *          - 5-10 seconds: LED2 blinks to indicate pending factory reset
+ *          - >10 seconds: Factory reset is performed, LED2 stays on for 1
+ * second
+ */
 static void judge_factory_reset(void) {
   static bool factory_reset_flag = false;
   static uint16_t duration = 0;
