@@ -1,6 +1,6 @@
 # OpenBlink
 
-English text is followed by Japanese translation. / 英語の文章の後に日本語訳が続きます。
+English text is followed by Chinese and Japanese translations. / 英文后面是中文和日文翻译。/ 英語の文章の後に中国語と日本語訳が続きます。
 
 ## What is OpenBlink
 
@@ -28,6 +28,38 @@ The following hardware platforms have been tested with OpenBlink:
 - Nordic nRF52840-DK (Board target: nrf52840dk/nrf52840)
 
 ## Development Environment Versions
+
+- nRF Connect SDK toolchain v2.9.0
+- nRF Connect SDK v2.9.0
+
+---
+
+## OpenBlink 是什么
+
+**_OpenBlink_** 是一个从 **_ViXion Blink_** 分叉的开源项目。
+
+- 可以使用高生产力的轻量级语言 Ruby 来开发嵌入式设备。
+- 程序重写和调试控制台完全无线。（蓝牙低功耗）
+- 重写时间少于 0.1 秒，不需要微处理器重启。（我们称之为"Blink"）
+
+## 如何获取 OpenBlink
+
+要克隆仓库并初始化子模块，请运行以下命令：
+
+```console
+$ git clone https://github.com/OpenBlink/openblink.git
+$ git submodule init
+$ git submodule update
+```
+
+## 已验证的硬件
+
+以下硬件平台已通过 OpenBlink 测试：
+
+- Nordic nRF54L15-DK (Board target: nrf54l15dk/nrf54l15/cpuapp)
+- Nordic nRF52840-DK (Board target: nrf52840dk/nrf52840)
+
+## 开发环境版本
 
 - nRF Connect SDK toolchain v2.9.0
 - nRF Connect SDK v2.9.0
