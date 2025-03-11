@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file mrubyc_vm.c
+ * @brief Implementation of mruby/c virtual machine management
+ * @details Implements functions for controlling the mruby/c virtual machine
+ */
 #include "mrubyc_vm.h"
 
 #include <stdbool.h>
@@ -27,31 +32,88 @@
 
 LOG_MODULE_REGISTER(app_mrubyc_vm, LOG_LEVEL_DBG);
 
+/**
+ * @brief Size of heap memory for the mruby/c VM in bytes
+ */
 #define MRBC_HEAP_MEMORY_SIZE (15 * 1024)
+
+/**
+ * @brief Stack size for the mruby/c VM main thread in bytes
+ */
 #define MRUBYC_VM_MAIN_STACK_SIZE (50 * 1024)
 
+/**
+ * @brief Flag indicating if VM reload is pending
+ */
 static bool request_mruby_reload = false;
+
+/**
+ * @brief Loads bytecode from storage or default slots
+ *
+ * @param kSlot The slot to load from
+ * @param bytecode Buffer to store the bytecode
+ * @param kLength Maximum length of the buffer
+ */
 static void load_bytecode(const blink_slot_t kSlot, uint8_t *const bytecode,
                           const size_t kLength);
+
+/**
+ * @brief Main function for the mruby/c VM thread
+ *
+ * @param unused1 Unused parameter
+ * @param unused2 Unused parameter
+ * @param unused3 Unused parameter
+ */
 static void mrubyc_vm_main(void *, void *, void *);
+
+/**
+ * @brief Timer handler for the mruby/c VM
+ *
+ * @param timer Timer instance
+ */
 static void mrubyc_timerhandler(struct k_timer *const timer) { mrbc_tick(); }
+
+/**
+ * @brief Thread definition for the mruby/c VM main function
+ */
 K_THREAD_DEFINE(th_mrubyc_vm_main, MRUBYC_VM_MAIN_STACK_SIZE, mrubyc_vm_main,
                 NULL, NULL, NULL, 1, 0, 1);
+
+/**
+ * @brief Timer definition for the mruby/c VM
+ */
 K_TIMER_DEFINE(timer_mrubyc, mrubyc_timerhandler, NULL);
 
-// **************************************************************************
-// app_mrubyc_vm_set_reload
+/**
+ * @brief Sets the reload flag for the mruby/c virtual machine
+ *
+ * @details When set, the VM will reload bytecode on the next cycle
+ *
+ * @return fn_t kSuccess if successful
+ */
 fn_t app_mrubyc_vm_set_reload(void) {
   request_mruby_reload = true;
   return kSuccess;
 }
 
-// **************************************************************************
-// app_mrubyc_vm_get_reload
+/**
+ * @brief Gets the current state of the reload flag
+ *
+ * @return true if reload is pending
+ * @return false if no reload is pending
+ */
 bool app_mrubyc_vm_get_reload(void) { return request_mruby_reload; }
 
-// **************************************************************************
-// mrubyc_vm_main
+/**
+ * @brief Main function for the mruby/c VM thread
+ *
+ * @details Initializes the VM, loads bytecode, creates tasks, and runs the VM
+ * in a loop
+ *
+ * @param unused1 Unused parameter
+ * @param unused2 Unused parameter
+ * @param unused3 Unused parameter
+ */
 static void mrubyc_vm_main(void *, void *, void *) {
   int64_t timestamp = k_uptime_get();
   char buf_blink_time[100] = {0};
@@ -116,8 +178,16 @@ static void mrubyc_vm_main(void *, void *, void *) {
   }
 }
 
-// **************************************************************************
-// load_bytecode
+/**
+ * @brief Loads bytecode from storage or default slots
+ *
+ * @details Attempts to load bytecode from non-volatile memory first.
+ *          If that fails, loads from factory default program.
+ *
+ * @param kSlot The slot to load from
+ * @param bytecode Buffer to store the bytecode
+ * @param kLength Maximum length of the buffer
+ */
 static void load_bytecode(const blink_slot_t kSlot, uint8_t *const bytecode,
                           const size_t kLength) {
   ssize_t rc = 0;

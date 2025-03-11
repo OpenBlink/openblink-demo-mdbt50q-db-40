@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file gpio.c
+ * @brief Implementation of GPIO driver
+ * @details Implements functions for controlling LEDs and reading switch states
+ */
 #include "gpio.h"
 
 #include <stdbool.h>
@@ -14,18 +19,26 @@
 
 LOG_MODULE_REGISTER(drv_gpio, LOG_LEVEL_DBG);
 
+/** @brief GPIO specifications for switches */
 static const struct gpio_dt_spec kSw[4] = {
     GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios),
     GPIO_DT_SPEC_GET(DT_ALIAS(sw1), gpios),
     GPIO_DT_SPEC_GET(DT_ALIAS(sw2), gpios),
     GPIO_DT_SPEC_GET(DT_ALIAS(sw3), gpios)};
+
+/** @brief GPIO specifications for LEDs */
 static const struct gpio_dt_spec kLed[3] = {
     GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios),
     GPIO_DT_SPEC_GET(DT_ALIAS(led1), gpios),
     GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios)};
 
-// **************************************************************************
-// drv_gpio_init
+/**
+ * @brief Initializes the GPIO subsystem
+ *
+ * @details Configures switch pins as inputs and LED pins as outputs
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t drv_gpio_init(void) {
   fn_t tmp_ret = kSuccess;
   // input
@@ -56,8 +69,13 @@ fn_t drv_gpio_init(void) {
   return tmp_ret;
 }
 
-// **************************************************************************
-// drv_gpio_get
+/**
+ * @brief Gets the current state of a GPIO pin
+ *
+ * @param kTgt Target GPIO pin
+ * @return true if the pin is active (switch pressed)
+ * @return false if the pin is inactive (switch released)
+ */
 bool drv_gpio_get(const drv_gpio_t kTgt) {
   switch (kTgt) {
     case kDrvGpioSW1:
@@ -86,8 +104,13 @@ bool drv_gpio_get(const drv_gpio_t kTgt) {
   return false;
 }
 
-// **************************************************************************
-// drv_gpio_set
+/**
+ * @brief Sets the state of a GPIO pin
+ *
+ * @param kTgt Target GPIO pin
+ * @param kReq Requested state (true for active, false for inactive)
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t drv_gpio_set(const drv_gpio_t kTgt, const bool kReq) {
   int tmp_value = kReq ? 1 : 0;
   switch (kTgt) {
