@@ -6,7 +6,7 @@ printf "#{RUBY_ENGINE} #{MRUBYC_VERSION} (mruby:#{MRUBY_VERSION} ruby:#{RUBY_VER
 
 while true
   return if Blink.req_reload?
-  # BLE状態を表示
+
   case BLE.state()
   when 0 # Off
     LED.set(part: :led3)

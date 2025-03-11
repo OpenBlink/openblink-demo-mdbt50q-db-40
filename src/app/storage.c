@@ -2,6 +2,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file storage.c
+ * @brief Implementation of non-volatile storage management
+ * @details Implements functions for reading and writing data to persistent
+ * storage using Zephyr's ZMS filesystem
+ */
 #include "storage.h"
 
 #include <stdlib.h>
@@ -16,16 +22,29 @@
 #include <zephyr/storage/flash_map.h>
 
 LOG_MODULE_REGISTER(app_storage, LOG_LEVEL_DBG);
+
+/** @brief Mutex for protecting storage operations */
 K_MUTEX_DEFINE(mutex_storage);
 
+/** @brief ZMS partition name */
 #define ZMS_PARTITION zms_storage
+
+/** @brief Device for the ZMS partition */
 #define ZMS_PARTITION_DEVICE FIXED_PARTITION_DEVICE(ZMS_PARTITION)
+
+/** @brief Offset for the ZMS partition */
 #define ZMS_PARTITION_OFFSET FIXED_PARTITION_OFFSET(ZMS_PARTITION)
 
+/** @brief ZMS filesystem structure */
 static struct zms_fs fs;
 
-// **************************************************************************
-// storage_init
+/**
+ * @brief Initializes the storage subsystem
+ *
+ * @details Sets up the ZMS filesystem for persistent storage
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t storage_init(void) {
   struct flash_pages_info info;
   int rc = 0;
@@ -55,8 +74,15 @@ fn_t storage_init(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// storage_read_hist
+/**
+ * @brief Reads data from storage with history counter
+ *
+ * @param kId Storage identifier
+ * @param data Buffer to store the read data
+ * @param kLength Maximum length of the buffer
+ * @param kHistoryCounter History version to read (0 for latest)
+ * @return ssize_t The number of bytes read, or negative on error
+ */
 ssize_t storage_read_hist(const storage_id_t kId, void *const data,
                           const size_t kLength,
                           const uint16_t kHistoryCounter) {
@@ -67,15 +93,27 @@ ssize_t storage_read_hist(const storage_id_t kId, void *const data,
   return kRc;
 }
 
-// **************************************************************************
-// storage_read
+/**
+ * @brief Reads latest data from storage
+ *
+ * @param kId Storage identifier
+ * @param data Buffer to store the read data
+ * @param kLength Maximum length of the buffer
+ * @return ssize_t The number of bytes read, or negative on error
+ */
 ssize_t storage_read(const storage_id_t kId, void *const data,
                      const size_t kLength) {
   return storage_read_hist(kId, data, kLength, 0);
 }
 
-// **************************************************************************
-// storage_write
+/**
+ * @brief Writes data to storage
+ *
+ * @param kId Storage identifier
+ * @param kData Pointer to the data to write
+ * @param kLength Length of the data
+ * @return ssize_t The number of bytes written, or negative on error
+ */
 ssize_t storage_write(const storage_id_t kId, const void *const kData,
                       const size_t kLength) {
   k_mutex_lock(&mutex_storage, K_FOREVER);
@@ -85,14 +123,22 @@ ssize_t storage_write(const storage_id_t kId, const void *const kData,
   return kRc;
 }
 
-// **************************************************************************
-// storage_get_data_length
+/**
+ * @brief Gets the length of data in storage
+ *
+ * @param kId Storage identifier
+ * @return ssize_t The length of the data, or negative on error
+ */
 ssize_t storage_get_data_length(const storage_id_t kId) {
   return zms_get_data_length(&fs, (uint32_t)kId);
 }
 
-// **************************************************************************
-// storage_delete
+/**
+ * @brief Deletes data from storage
+ *
+ * @param kId Storage identifier
+ * @return int 0 on success, negative on error
+ */
 int storage_delete(const storage_id_t kId) {
   k_mutex_lock(&mutex_storage, K_FOREVER);
   int kRc = zms_delete(&fs, (uint32_t)kId);
@@ -101,8 +147,14 @@ int storage_delete(const storage_id_t kId) {
   return kRc;
 }
 
-// **************************************************************************
-// storage_free_space
+/**
+ * @brief Logs information about free space in storage
+ *
+ * @details Calculates and logs free space for both zms_storage and
+ * settings_storage
+ *
+ * @return ssize_t Free space in bytes for zms_storage
+ */
 ssize_t storage_free_space(void) {
   // zms_storage
   const ssize_t kRc = zms_calc_free_space(&fs);
@@ -121,8 +173,14 @@ ssize_t storage_free_space(void) {
   return kRc;  // zm_storage
 }
 
-// **************************************************************************
-// storage_maximum_data_size
+/**
+ * @brief Gets the maximum data size that can be stored
+ *
+ * @details Calculates the maximum data size based on sector size and allocation
+ * table entry size
+ *
+ * @return ssize_t Maximum data size in bytes
+ */
 ssize_t storage_maximum_data_size(void) {
   return (fs.sector_size - 5 * fs.ate_size);
 }

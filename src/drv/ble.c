@@ -2,6 +2,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file ble.c
+ * @brief Implementation of Bluetooth Low Energy driver
+ * @details Implements BLE initialization, connection management, and data
+ * transfer functions
+ */
 #include "ble.h"
 
 #include <assert.h>
@@ -26,11 +32,22 @@
 
 LOG_MODULE_REGISTER(drv_ble, LOG_LEVEL_DBG);
 
+/** @brief Global BLE context */
 BLE_CONTEXT ble_context;
 
+/** @brief Semaphore for BLE initialization synchronization */
 static K_SEM_DEFINE(ble_init_ok, 0, 1);
 
+/** @brief MTU exchange parameters */
 static struct bt_gatt_exchange_params exchange_params;
+
+/**
+ * @brief Callback for MTU exchange completion
+ *
+ * @param conn Bluetooth connection handle
+ * @param err Error code (0 for success)
+ * @param params Exchange parameters
+ */
 static void mtu_exchange_cb(struct bt_conn *conn, uint8_t err,
                             struct bt_gatt_exchange_params *params) {
   if (err) {
@@ -41,7 +58,14 @@ static void mtu_exchange_cb(struct bt_conn *conn, uint8_t err,
   printk("Negotiated MTU: %u\n", mtu);
 }
 
-// on_connected
+/**
+ * @brief Connection callback
+ *
+ * @details Called when a BLE connection is established
+ *
+ * @param conn Bluetooth connection handle
+ * @param err Error code (0 for success)
+ */
 static void on_connected(struct bt_conn *conn, uint8_t err) {
   struct bt_conn_info info;
 
@@ -78,7 +102,14 @@ static void on_connected(struct bt_conn *conn, uint8_t err) {
   }
 }
 
-// on_disconnected
+/**
+ * @brief Disconnection callback
+ *
+ * @details Called when a BLE connection is terminated
+ *
+ * @param conn Bluetooth connection handle
+ * @param reason Reason for disconnection
+ */
 static void on_disconnected(struct bt_conn *conn, uint8_t reason) {
   {
     BLE_PARAM param = {
@@ -89,14 +120,31 @@ static void on_disconnected(struct bt_conn *conn, uint8_t reason) {
   }
 }
 
-// on_le_param_req
+/**
+ * @brief Connection parameter request callback
+ *
+ * @details Called when a remote device requests connection parameter update
+ *
+ * @param conn Bluetooth connection handle
+ * @param param Requested connection parameters
+ * @return true if parameters are acceptable, false otherwise
+ */
 static bool on_le_param_req(struct bt_conn *conn,
                             struct bt_le_conn_param *param) {
   // If acceptable params, return true, otherwise return false.
   return true;
 }
 
-// on_le_param_updated
+/**
+ * @brief Connection parameter update callback
+ *
+ * @details Called when connection parameters have been updated
+ *
+ * @param conn Bluetooth connection handle
+ * @param interval Connection interval
+ * @param latency Slave latency
+ * @param timeout Connection supervision timeout
+ */
 static void on_le_param_updated(struct bt_conn *conn, uint16_t interval,
                                 uint16_t latency, uint16_t timeout) {
   struct bt_conn_info info;
@@ -117,6 +165,12 @@ static void on_le_param_updated(struct bt_conn *conn, uint16_t interval,
   }
 }
 
+/**
+ * @brief Converts PHY value to string representation
+ *
+ * @param phy PHY value
+ * @return const char* String representation of the PHY
+ */
 static const char *phy2str(uint8_t phy) {
   switch (phy) {
     case 0:
@@ -132,14 +186,28 @@ static const char *phy2str(uint8_t phy) {
   }
 }
 
-// on_le_phy_updated
+/**
+ * @brief PHY update callback
+ *
+ * @details Called when the PHY has been updated
+ *
+ * @param conn Bluetooth connection handle
+ * @param param PHY information
+ */
 static void on_le_phy_updated(struct bt_conn *conn,
                               struct bt_conn_le_phy_info *param) {
   LOG_DBG("BLE: PHY updated: TX PHY %s, RX PHY %s", phy2str(param->tx_phy),
           phy2str(param->rx_phy));
 }
 
-// on_le_data_length_updated
+/**
+ * @brief Data length update callback
+ *
+ * @details Called when the data length parameters have been updated
+ *
+ * @param conn Bluetooth connection handle
+ * @param info Data length information
+ */
 static void on_le_data_length_updated(struct bt_conn *conn,
                                       struct bt_conn_le_data_len_info *info) {
   LOG_DBG(
@@ -151,7 +219,13 @@ static void on_le_data_length_updated(struct bt_conn *conn,
   LOG_DBG("BLE: MTU: %d", mtu);
 }
 
-// Callback of bt_enable()
+/**
+ * @brief Bluetooth ready callback
+ *
+ * @details Called when Bluetooth initialization is complete
+ *
+ * @param err Error code (0 for success)
+ */
 static void bt_ready(int err) {
   if (err) {
     LOG_ERR("BLE: init failed with error code %d", err);
@@ -172,7 +246,15 @@ static void bt_ready(int err) {
   k_sem_give(&ble_init_ok);
 }
 
-// ble_init
+/**
+ * @brief Initializes the BLE subsystem
+ *
+ * @details Sets up the BLE stack, registers callbacks, and initializes the
+ * Blink service
+ *
+ * @param cb Callback function for BLE events
+ * @return int 0 on success, negative on error
+ */
 int ble_init(BLE_CALLBACK cb) {
   int err = 0;
   assert(cb != NULL);
@@ -208,7 +290,11 @@ int ble_init(BLE_CALLBACK cb) {
   return err;
 }
 
-// ble_disconnect
+/**
+ * @brief Disconnects the current BLE connection
+ *
+ * @return int 0 on success, negative on error
+ */
 int ble_disconnect() {
   LOG_INF("BLE: Disconnecting...");
   int err = 0;
@@ -221,18 +307,30 @@ int ble_disconnect() {
   return err;
 }
 
+/**
+ * @brief Advertisement parameters
+ * @details Configures advertisement as connectable with 100-150ms interval
+ */
 static const struct bt_le_adv_param adv_param = BT_LE_ADV_PARAM_INIT(
     BT_LE_ADV_OPT_CONNECTABLE,  // | BT_LE_ADV_OPT_USE_IDENTITY,
     BT_GAP_ADV_FAST_INT_MIN_2,  // Advertisement interval (100ms)
     BT_GAP_ADV_FAST_INT_MAX_2,  // Advertisement interval (150ms)
     NULL);
 
-// Set Scan Response data
+/**
+ * @brief Scan response data
+ * @details Includes the OpenBlink service UUID
+ */
 static const struct bt_data sd[] = {
     BT_DATA_BYTES(BT_DATA_UUID128_ALL, OPENBLINK_SERVICE_UUID),
 };
 
-// ble_start_advertising
+/**
+ * @brief Starts BLE advertising with the specified device name
+ *
+ * @param local_name Device name to advertise
+ * @return int 0 on success, negative on error
+ */
 int ble_start_advertising(const char *local_name) {
   int err = 0;
 
@@ -256,7 +354,11 @@ int ble_start_advertising(const char *local_name) {
   return err;
 }
 
-// ble_stop_advertising
+/**
+ * @brief Stops BLE advertising
+ *
+ * @return int 0 on success, negative on error
+ */
 int ble_stop_advertising() {
   int err = bt_le_adv_stop();
   if (err) {
@@ -265,5 +367,9 @@ int ble_stop_advertising() {
   return err;
 }
 
-// ble_get_mtu
+/**
+ * @brief Gets the current Maximum Transmission Unit (MTU)
+ *
+ * @return uint16_t Current MTU size in bytes
+ */
 uint16_t ble_get_mtu() { return bt_gatt_get_mtu(ble_context.conn); }

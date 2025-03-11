@@ -2,6 +2,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file init.c
+ * @brief Implementation of system initialization and reset functions
+ * @details Implements boot sequence, factory reset, and system reboot
+ * functionality
+ */
 #include <stdint.h>
 #include <stdlib.h>
 #include <zephyr/drivers/hwinfo.h>
@@ -24,13 +30,29 @@
 
 LOG_MODULE_REGISTER(app_init, LOG_LEVEL_DBG);
 
+/** @brief External mutex for storage operations */
 extern struct k_mutex mutex_storage;
 
+/**
+ * @brief Main initialization function called during system boot
+ *
+ * @return int EXIT_SUCCESS on success, EXIT_FAILURE on failure
+ */
 static int init_main(void);
+
+/**
+ * @brief Register init_main as a system initialization function
+ */
 SYS_INIT(init_main, APPLICATION, 0);
 
-// **************************************************************************
-// init_main
+/**
+ * @brief Main initialization function called during system boot
+ *
+ * @details Initializes all subsystems, displays device information, and
+ * configures the system for operation
+ *
+ * @return int EXIT_SUCCESS on success, EXIT_FAILURE on failure
+ */
 static int init_main(void) {
   int64_t timestamp = k_uptime_get();
   fn_t ret = kSuccess;
@@ -75,8 +97,14 @@ static int init_main(void) {
   }
 }
 
-// **************************************************************************
-// init_reboot
+/**
+ * @brief Reboots the device
+ *
+ * @details Attempts to safely reboot by acquiring the storage mutex first.
+ *          If that fails after multiple attempts, forces a cold reboot.
+ *
+ * @return fn_t kUndetermined since the function should not return if successful
+ */
 fn_t init_reboot(void) {
   LOG_WRN("Rebooting...");
   // Reboot
@@ -95,8 +123,13 @@ fn_t init_reboot(void) {
   return kUndetermined;
 }
 
-// **************************************************************************
-// init_factory_reset
+/**
+ * @brief Performs a factory reset of the device
+ *
+ * @details Deletes all bytecode from both storage slots
+ *
+ * @return fn_t kSuccess if successful
+ */
 fn_t init_factory_reset(void) {
   blink_delete(kBlinkSlot1);
   blink_delete(kBlinkSlot2);

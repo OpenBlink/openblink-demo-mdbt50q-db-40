@@ -2,6 +2,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file input.c
+ * @brief Implementation of Input API for mruby/c
+ * @details Implements the Input class and methods for mruby/c scripts to handle
+ * button inputs
+ */
 #include "input.h"
 
 #include <stdint.h>
@@ -14,15 +20,25 @@
 
 LOG_MODULE_REGISTER(api_input, LOG_LEVEL_DBG);
 
+/**
+ * @brief Converts a symbol ID to the corresponding GPIO enum
+ *
+ * @param kSymbol The symbol ID to convert
+ * @return drv_gpio_t The corresponding GPIO enum
+ */
 static drv_gpio_t sym_to_gpio(const int16_t kSymbol);
 
-// **************************************************************************
-// forward declaration
+/**
+ * @brief Forward declarations for button state methods
+ */
 static void c_get_sw_pressed(mrb_vm *vm, mrb_value *v, int argc);
 static void c_get_sw_released(mrb_vm *vm, mrb_value *v, int argc);
 
-// **************************************************************************
-// api_input_define
+/**
+ * @brief Defines the Input class and methods for mruby/c
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t api_input_define(void) {
   mrb_class *class_input;
   class_input = mrbc_define_class(0, "Input", mrbc_class_object);
@@ -31,8 +47,13 @@ fn_t api_input_define(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// c_get_sw_pressed
+/**
+ * @brief Checks if a button is currently pressed
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_get_sw_pressed(mrb_vm *vm, mrb_value *v, int argc) {
   int16_t tgt = -1;
   SET_FALSE_RETURN();
@@ -58,8 +79,13 @@ static void c_get_sw_pressed(mrb_vm *vm, mrb_value *v, int argc) {
   }
 }
 
-// **************************************************************************
-// c_get_sw_released
+/**
+ * @brief Checks if a button is currently released
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_get_sw_released(mrb_vm *vm, mrb_value *v, int argc) {
   int16_t tgt = -1;
   SET_FALSE_RETURN();
@@ -85,8 +111,12 @@ static void c_get_sw_released(mrb_vm *vm, mrb_value *v, int argc) {
   }
 }
 
-// **************************************************************************
-// sym_to_gpio
+/**
+ * @brief Converts a symbol ID to the corresponding GPIO enum
+ *
+ * @param kSymbol The symbol ID to convert
+ * @return drv_gpio_t The corresponding GPIO enum
+ */
 static drv_gpio_t sym_to_gpio(const int16_t kSymbol) {
   if (api_symbol_get_id(kSymbolSW1) == kSymbol) {
     return kDrvGpioSW1;
