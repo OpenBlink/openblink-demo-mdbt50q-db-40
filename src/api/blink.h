@@ -12,6 +12,11 @@
 
 #include "../lib/fn.h"
 
+/**
+ * @brief Initializes the Blink subsystem
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t api_blink_init(void);
 
 /**
@@ -20,6 +25,12 @@ fn_t api_blink_init(void);
  * @return fn_t kSuccess if successful, kFailure otherwise
  */
 fn_t api_blink_define(void);
+
+/**
+ * @brief Performs normality check for watchdog functionality
+ *
+ * @return fn_t kSuccess if all VMs are responding, kFailure otherwise
+ */
 fn_t api_blink_normality_check(void);
 
 #endif

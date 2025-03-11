@@ -36,8 +36,14 @@ bool api_api_get_bool(const mrbc_vtype kType) {
   return false;
 }
 
-// **************************************************************************
-// api_api_set_systemtask
+/**
+ * @brief Sets a system task for a specific VM
+ *
+ * @param kVmId The VM ID to set as system task
+ * @param kBytecode The bytecode for the system task
+ * @param kHmac The HMAC for verification
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t api_api_set_systemtask(const uint8_t kVmId, const uint8_t *const kBytecode,
                             const uint8_t *const kHmac) {
   // ToDo: HMAC verify
@@ -46,8 +52,12 @@ fn_t api_api_set_systemtask(const uint8_t kVmId, const uint8_t *const kBytecode,
   return kSuccess;
 }
 
-// **************************************************************************
-// api_api_check_systemtask
+/**
+ * @brief Checks if a VM ID is the system task
+ *
+ * @param kVmId The VM ID to check
+ * @return fn_t kSuccess if it is the system task, kFailure otherwise
+ */
 fn_t api_api_check_systemtask(const uint8_t kVmId) {
   if (kVmId == system_task_vmid) {
     return kSuccess;
@@ -56,8 +66,11 @@ fn_t api_api_check_systemtask(const uint8_t kVmId) {
   }
 }
 
-// **************************************************************************
-// api_api_get_allow_expert_api
+/**
+ * @brief Checks if expert API access is allowed
+ *
+ * @return fn_t kSuccess if expert API is allowed, kFailure otherwise
+ */
 fn_t api_api_get_allow_expert_api(void) {
 #if CONFIG_DEBUG
   LOG_DBG("API: Debug mode is enabled.");

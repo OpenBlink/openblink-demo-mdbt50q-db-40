@@ -79,8 +79,12 @@ static void judge_factory_reset(void) {
   }
 }
 
-// **************************************************************************
-// debug_lib_hmac
+/**
+ * @brief Debug function to test HMAC-SHA256 functionality
+ *
+ * @details Creates a test key, signs test data, and verifies the signature
+ * to ensure the HMAC-SHA256 implementation is working correctly
+ */
 static void debug_lib_hmac(void) {
   uint8_t dummy_data[32] = {0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10,
                             11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,

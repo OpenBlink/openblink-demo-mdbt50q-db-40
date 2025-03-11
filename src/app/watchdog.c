@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file watchdog.c
+ * @brief Implementation of watchdog timer functionality
+ * @details Implements functions for managing the system watchdog timer
+ */
 #include "watchdog.h"
 
 #include <stdbool.h>
@@ -24,17 +29,32 @@ LOG_MODULE_REGISTER(app_watchdog, LOG_LEVEL_WRN);
 static const struct device *wdt_dev = DEVICE_DT_GET(DT_NODELABEL(wdt));
 static int wdt_channel_id = 0;
 
+/**
+ * @brief Main watchdog thread function
+ *
+ * @param unused1 Unused parameter
+ * @param unused2 Unused parameter
+ * @param unused3 Unused parameter
+ */
 static void watchdog_thread_main(void *, void *, void *);
 K_THREAD_DEFINE(thread_watchdog, 384, watchdog_thread_main, NULL, NULL, NULL,
                 10, K_ESSENTIAL, 100);
 
+/**
+ * @brief Work queue watchdog function
+ *
+ * @param work Pointer to the work item
+ */
 static void watchdog_work_queue_watch(struct k_work *const work);
 K_WORK_DEFINE(work_watchdog, watchdog_work_queue_watch);
 
 static bool thread_heartbeat[kAppWatchDogThreadNum] = {true};
 
-// **************************************************************************
-// watchdog_init
+/**
+ * @brief Initializes the watchdog timer
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t watchdog_init(void) {
   int err = 0;
   struct wdt_timeout_cfg wdt_config = {
@@ -63,12 +83,20 @@ fn_t watchdog_init(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// watchdog_get_max_window_ms
+/**
+ * @brief Gets the maximum watchdog window in milliseconds
+ *
+ * @return uint32_t Maximum watchdog window in milliseconds
+ */
 uint32_t watchdog_get_max_window_ms(void) { return WDT_MAX_WINDOW_MS; }
 
-// **************************************************************************
-// watchdog_thread_main
+/**
+ * @brief Main watchdog thread function
+ *
+ * @param unused1 Unused parameter
+ * @param unused2 Unused parameter
+ * @param unused3 Unused parameter
+ */
 static void watchdog_thread_main(void *, void *, void *) {
   while (1) {
     fn_t tmp_state = kSuccess;
@@ -102,8 +130,12 @@ static void watchdog_thread_main(void *, void *, void *) {
   }
 }
 
-// **************************************************************************
-// watchdog_thread_hearbeat
+/**
+ * @brief Sends a heartbeat for the specified thread
+ *
+ * @param kThreadName The thread to send a heartbeat for
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t watchdog_thread_hearbeat(const app_watchdog_thread_t kThreadName) {
   if (kAppWatchDogThreadNum <= kThreadName) {
     return kFailure;
@@ -112,8 +144,11 @@ fn_t watchdog_thread_hearbeat(const app_watchdog_thread_t kThreadName) {
   return kSuccess;
 }
 
-// **************************************************************************
-// watchdog_work_queue_watch
+/**
+ * @brief Work queue watchdog function
+ *
+ * @param work Pointer to the work item
+ */
 static void watchdog_work_queue_watch(struct k_work *const work) {
   watchdog_thread_hearbeat(kAppWatchDogThreadSysWorkQ);
 }

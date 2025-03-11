@@ -140,8 +140,11 @@ static storage_id_t slot_to_storageid(const blink_slot_t kSlot) {
   }
 }
 
-// **************************************************************************
-// blink_countup
+/**
+ * @brief Increments the blink counter values
+ *
+ * @details Updates both trip and total blink counters in runtime settings
+ */
 static void blink_countup(void) {
   uint32_t tmp_trip = 0U;
   uint32_t tmp_total = 0U;

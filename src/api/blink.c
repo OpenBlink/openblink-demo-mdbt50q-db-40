@@ -23,9 +23,41 @@ static bool watchdog_feed[MAX_VM_COUNT];
  * @param argc The argument count
  */
 static void c_get_reload(mrb_vm *vm, mrb_value *v, int argc);
+
+/**
+ * @brief Sample method for string handling
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_string(mrb_vm *vm, mrb_value *v, int argc);
+
+/**
+ * @brief Sample method for array handling
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_array(mrb_vm *vm, mrb_value *v, int argc);
+
+/**
+ * @brief Alternative sample method for array handling
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_array2(mrb_vm *vm, mrb_value *v, int argc);
+
+/**
+ * @brief Sample method for creating and returning arrays
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_array3(mrb_vm *vm, mrb_value *v, int argc);
 
 /**
@@ -44,8 +76,13 @@ fn_t api_blink_define(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// c_sample_string
+/**
+ * @brief Sample method for string handling
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_string(mrb_vm *vm, mrb_value *v, int argc) {
   char tmp_char[255];
   size_t tmp_size = 0;
@@ -62,8 +99,13 @@ static void c_sample_string(mrb_vm *vm, mrb_value *v, int argc) {
   }
 }
 
-// **************************************************************************
-// c_sample_array
+/**
+ * @brief Sample method for array handling
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_array(mrb_vm *vm, mrb_value *v, int argc) {
   uint8_t array[3] = {0};
   if (MRBC_TT_ARRAY == v[1].tt) {
@@ -74,8 +116,13 @@ static void c_sample_array(mrb_vm *vm, mrb_value *v, int argc) {
   }
 }
 
-// **************************************************************************
-// c_sample_array2
+/**
+ * @brief Alternative sample method for array handling
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_array2(mrb_vm *vm, mrb_value *v, int argc) {
   uint8_t c_array[3] = {0};
   if (MRBC_TT_ARRAY == v[1].tt) {
@@ -89,8 +136,13 @@ static void c_sample_array2(mrb_vm *vm, mrb_value *v, int argc) {
   }
 }
 
-// **************************************************************************
-// c_sample_array3
+/**
+ * @brief Sample method for creating and returning arrays
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_sample_array3(mrb_vm *vm, mrb_value *v, int argc) {
   float tmp[3] = {0.0f, 1.0f, 3.14f};
   mrb_value ret = mrbc_array_new(vm, 3);
@@ -119,8 +171,11 @@ static void c_get_reload(mrb_vm *vm, mrb_value *v, int argc) {
   SET_BOOL_RETURN(app_mrubyc_vm_get_reload());
 }
 
-// **************************************************************************
-// api_blink_init
+/**
+ * @brief Initializes the Blink subsystem
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t api_blink_init(void) {
   for (size_t i = 0; i < MAX_VM_COUNT; i++) {
     watchdog_enable[i] = false;
@@ -129,8 +184,11 @@ fn_t api_blink_init(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// api_blink_normality_check
+/**
+ * @brief Performs normality check for watchdog functionality
+ *
+ * @return fn_t kSuccess if all VMs are responding, kFailure otherwise
+ */
 fn_t api_blink_normality_check(void) {
   fn_t ret = kSuccess;
   for (size_t i = 0; i < MAX_VM_COUNT; i++) {

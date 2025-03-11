@@ -2,6 +2,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file hmac-sha256.c
+ * @brief Implementation of HMAC-SHA256 cryptographic functions
+ * @details Implements functions for key generation, signing and verification
+ * using HMAC-SHA256
+ */
 #include "hmac-sha256.h"
 
 #include <psa/crypto.h>
@@ -12,7 +18,12 @@
 
 LOG_MODULE_REGISTER(lib_hmac_sha256, LOG_LEVEL_WRN);
 
-// hmac_sha256_genkey
+/**
+ * @brief Generates a new HMAC-SHA256 key
+ *
+ * @param key Pointer to key structure to store the generated key
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t hmac_sha256_genkey(hmac_sha256_key_t *const key) {
   psa_status_t status;
 
@@ -70,7 +81,15 @@ fn_t hmac_sha256_genkey(hmac_sha256_key_t *const key) {
   return kSuccess;
 }
 
-// hmac_sha256_sign
+/**
+ * @brief Signs data using HMAC-SHA256
+ *
+ * @param key Pointer to the key structure
+ * @param hmac Pointer to store the resulting HMAC
+ * @param kData Pointer to the data to sign
+ * @param kDataSize Size of the data in bytes
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t hmac_sha256_sign(hmac_sha256_key_t *const key,
                       hmac_sha256_hmac_t *const hmac,
                       const uint8_t *const kData, const size_t kDataSize) {
@@ -149,7 +168,15 @@ fn_t hmac_sha256_sign(hmac_sha256_key_t *const key,
   return kSuccess;
 }
 
-// hmac_sha256_verify
+/**
+ * @brief Verifies data using HMAC-SHA256
+ *
+ * @param key Pointer to the key structure
+ * @param kHmac Pointer to the HMAC to verify against
+ * @param kData Pointer to the data to verify
+ * @param kDataSize Size of the data in bytes
+ * @return fn_t kSuccess if verification successful, kFailure otherwise
+ */
 fn_t hmac_sha256_verify(hmac_sha256_key_t *const key,
                         const hmac_sha256_hmac_t *const kHmac,
                         const uint8_t *const kData, const size_t kDataSize) {

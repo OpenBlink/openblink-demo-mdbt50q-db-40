@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file pwm.c
+ * @brief Implementation of PWM API for mruby/c
+ * @details Implements the PWM class and methods for mruby/c scripts
+ */
 #include "pwm.h"
 
 #include <zephyr/logging/log.h>
@@ -14,12 +19,16 @@
 
 LOG_MODULE_REGISTER(api_pwm, LOG_LEVEL_DBG);
 
-// **************************************************************************
-// forward declarations
+/**
+ * @brief Forward declarations for PWM methods
+ */
 static void c_set_pwm(mrb_vm *vm, mrb_value *v, int argc);
 
-// **************************************************************************
-// api_pwm_define
+/**
+ * @brief Defines the PWM class and methods for mruby/c
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t api_pwm_define(void) {
   mrb_class *class_pwm;
   class_pwm = mrbc_define_class(0, "PWM", mrbc_class_object);
@@ -27,8 +36,13 @@ fn_t api_pwm_define(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// c_set_pwm
+/**
+ * @brief Sets the PWM frequency and duty cycle
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_set_pwm(mrb_vm *vm, mrb_value *v, int argc) {
   SET_FALSE_RETURN();
   if ((true == MRBC_ISNUMERIC(v[1])) && (true == MRBC_ISNUMERIC(v[2]))) {
