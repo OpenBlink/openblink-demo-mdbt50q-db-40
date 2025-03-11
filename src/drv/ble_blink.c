@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file ble_blink.c
+ * @brief Implementation of Bluetooth Low Energy Blink service
+ * @details Implements the Blink service for transferring bytecode over BLE
+ */
 #include "ble_blink.h"
 
 #include <assert.h>
@@ -27,76 +32,110 @@
 
 LOG_MODULE_REGISTER(ble_blink, LOG_LEVEL_DBG);
 
-// Service: 227da52c-e13a-412b-befb-ba2256bb7fbe
+/** @brief OpenBlink service UUID declaration */
 #define BT_UUID_OPENBLINK_SERVICE BT_UUID_DECLARE_128(OPENBLINK_SERVICE_UUID)
 
-// Program: ad9fdd56-1135-4a84-923c-ce5a244385e7
+/** @brief Program characteristic UUID for bytecode transfer */
 #define OPEN_BLINK_PROGRAM_CHARACTERISTIC_UUID \
   BT_UUID_128_ENCODE(0xad9fdd56, 0x1135, 0x4a84, 0x923c, 0xce5a244385e7)
+/** @brief Program characteristic UUID declaration */
 #define BT_UUID_OPEN_BLINK_PROGRAM_CHARACTERISTIC_UUID \
   BT_UUID_DECLARE_128(OPEN_BLINK_PROGRAM_CHARACTERISTIC_UUID)
 
-// Console: a015b3de-185a-4252-aa04-7a87d38ce148
+/** @brief Console characteristic UUID for debug output */
 #define OPEN_BLINK_CONSOLE_CHARACTERISTIC_UUID \
   BT_UUID_128_ENCODE(0xa015b3de, 0x185a, 0x4252, 0xaa04, 0x7a87d38ce148)
+/** @brief Console characteristic UUID declaration */
 #define BT_UUID_OPEN_BLINK_CONSOLE_CHARACTERISTIC_UUID \
   BT_UUID_DECLARE_128(OPEN_BLINK_CONSOLE_CHARACTERISTIC_UUID)
 
-// Status: ca141151-3113-448b-b21a-6a6203d253ff
+/** @brief Status characteristic UUID for device status information */
 #define OPEN_BLINK_STATUS_CHARACTERISTIC_UUID \
   BT_UUID_128_ENCODE(0xca141151, 0x3113, 0x448b, 0xb21a, 0x6a6203d253ff)
+/** @brief Status characteristic UUID declaration */
 #define BT_UUID_OPEN_BLINK_STATUS_CHARACTERISTIC_UUID \
   BT_UUID_DECLARE_128(OPEN_BLINK_STATUS_CHARACTERISTIC_UUID)
 
+/** @brief Blink protocol version */
 #define BLINK_VERSION 0x01
 
-#define BLINK_CMD_DATA 'D'    // Data
-#define BLINK_CMD_PROG 'P'    // Program
-#define BLINK_CMD_RESET 'R'   // softReset
+/** @brief Command code for data chunk transfer */
+#define BLINK_CMD_DATA 'D'  // Data
+/** @brief Command code for program execution */
+#define BLINK_CMD_PROG 'P'  // Program
+/** @brief Command code for device reset */
+#define BLINK_CMD_RESET 'R'  // softReset
+/** @brief Command code for bytecode reload */
 #define BLINK_CMD_RELOAD 'L'  // reLoad
 
+/**
+ * @brief Header structure for all Blink protocol chunks
+ */
 #pragma pack(1)
 typedef struct {
-  uint8_t version;     // [1] Blink Version (0x01)
-  uint8_t command;     // [1] 'D':Data 'P':Program 'R':SoftReset
-} BLINK_CHUNK_HEADER;  // 2bytes
+  uint8_t version;    /**< Blink protocol version (0x01) */
+  uint8_t command;    /**< Command type: 'D':Data, 'P':Program, 'R':Reset,
+                         'L':Reload */
+} BLINK_CHUNK_HEADER; /**< 2 bytes total */
 #pragma pack()
 
+/**
+ * @brief Structure for data chunk transfers
+ */
 #pragma pack(1)
 typedef struct {
-  BLINK_CHUNK_HEADER header;  // [2] Header
-  uint16_t offset;            // [2]
-  uint16_t size;              // [2]
-} BLINK_CHUNK_DATA;           // 6bytes
+  BLINK_CHUNK_HEADER header; /**< Common header */
+  uint16_t offset;           /**< Offset in bytecode buffer */
+  uint16_t size;             /**< Size of data chunk */
+} BLINK_CHUNK_DATA;          /**< 6 bytes total */
 #pragma pack()
 
+/**
+ * @brief Structure for program execution command
+ */
 #pragma pack(1)
 typedef struct {
-  BLINK_CHUNK_HEADER header;  // [2] Header
-  uint16_t length;            // [2]
-  uint16_t crc;               // [2] CRC16
-  uint8_t slot;               // [1]
-  uint8_t reserved;           // [1]
-} BLINK_CHUNK_PROGRAM;        // 6bytes
+  BLINK_CHUNK_HEADER header; /**< Common header */
+  uint16_t length;           /**< Total bytecode length */
+  uint16_t crc;              /**< CRC16 checksum */
+  uint8_t slot;              /**< Target slot for bytecode */
+  uint8_t reserved;          /**< Reserved for future use */
+} BLINK_CHUNK_PROGRAM;       /**< 8 bytes total */
 #pragma pack()
 
 // -------------------------------------------------------------------------------------------
 
+/** @brief External reference to BLE context */
 extern BLE_CONTEXT ble_context;
 
+/** @brief Buffer for storing received bytecode */
 static uint8_t blink_bytecode[BLINK_MAX_BYTECODE_SIZE] = {0};
 
+/**
+ * @brief Sends a notification through the program characteristic
+ *
+ * @param data String to send as notification
+ * @return int 0 on success, negative on error
+ */
 static int notify_blink_program(const char *data);
 
-// **************************************************************************
-// blink_result_error
+/**
+ * @brief Sends an error message as a notification
+ *
+ * @param msg Error message to send
+ */
 static void blink_result_error(const char *msg) {
   LOG_ERR("%s", msg);
   notify_blink_program(msg);
 }
 
-// **************************************************************************
-// Blink Command: 'D'ata
+/**
+ * @brief Processes a data chunk command (BLINK_CMD_DATA)
+ *
+ * @param header Pointer to the command header
+ * @param len Total length of the received data
+ * @return int 0 on success, negative on error
+ */
 static int blink_program_command_D(BLINK_CHUNK_HEADER *header, uint16_t len) {
   BLINK_CHUNK_DATA *data_chunk = (BLINK_CHUNK_DATA *)header;
 
@@ -124,8 +163,12 @@ static int blink_program_command_D(BLINK_CHUNK_HEADER *header, uint16_t len) {
   return 0;
 }
 
-// **************************************************************************
-// Blink Command: 'P'rogram
+/**
+ * @brief Processes a program execution command (BLINK_CMD_PROG)
+ *
+ * @param header Pointer to the command header
+ * @return int 0 on success, negative on error
+ */
 static int blink_program_command_P(BLINK_CHUNK_HEADER *header) {
   BLINK_CHUNK_PROGRAM *p = (BLINK_CHUNK_PROGRAM *)header;
 
@@ -168,8 +211,17 @@ static int blink_program_command_P(BLINK_CHUNK_HEADER *header) {
   return 0;
 }
 
-// **************************************************************************
-// blink_write_program
+/**
+ * @brief Callback for program characteristic write operations
+ *
+ * @param conn Bluetooth connection handle
+ * @param attr GATT attribute being written to
+ * @param buf Buffer containing the data to write
+ * @param len Length of the data
+ * @param offset Offset to start writing at
+ * @param flags Write operation flags
+ * @return ssize_t Number of bytes written
+ */
 static ssize_t blink_write_program(struct bt_conn *conn,
                                    const struct bt_gatt_attr *attr,
                                    const void *buf, uint16_t len,
@@ -216,8 +268,16 @@ static ssize_t blink_write_program(struct bt_conn *conn,
   return len;
 }
 
-// **************************************************************************
-// blink_read_mtu
+/**
+ * @brief Callback for status characteristic read operations
+ *
+ * @param conn Bluetooth connection handle
+ * @param attr GATT attribute being read from
+ * @param buf Buffer to store the read data
+ * @param len Maximum length of the buffer
+ * @param offset Offset to start reading from
+ * @return ssize_t Number of bytes read
+ */
 static ssize_t blink_read_mtu(struct bt_conn *conn,
                               const struct bt_gatt_attr *attr, void *buf,
                               uint16_t len, uint16_t offset) {
@@ -231,14 +291,19 @@ static ssize_t blink_read_mtu(struct bt_conn *conn,
                            sizeof(param.status.mtu));
 }
 
-// **************************************************************************
-// on_cccd_changed
+/**
+ * @brief Callback for Client Characteristic Configuration Descriptor changes
+ *
+ * @param attr GATT attribute
+ * @param value New CCCD value
+ */
 static void on_cccd_changed(const struct bt_gatt_attr *attr, uint16_t value) {
   LOG_DBG("BLE: CCCD changed to %04x", value);
 }
 
-// **************************************************************************
-// BLE GATT Attributes
+/**
+ * @brief BLE GATT attributes for the OpenBlink service
+ */
 static struct bt_gatt_attr attrs[] = {
     // 0
     BT_GATT_PRIMARY_SERVICE(BT_UUID_OPENBLINK_SERVICE),
@@ -259,14 +324,22 @@ static struct bt_gatt_attr attrs[] = {
                            blink_read_mtu, NULL, NULL),
 };
 
+/** @brief Index of console characteristic in the attributes array */
 #define SERVICE_BLINK_CONSOLE 2  // [2]
+/** @brief Index of program characteristic in the attributes array */
 #define SERVICE_BLINK_PROGRAM 5  // [5]
-#define SERVICE_BLINK_STATUS 7   // [7]
+/** @brief Index of status characteristic in the attributes array */
+#define SERVICE_BLINK_STATUS 7  // [7]
 
+/** @brief GATT service definition */
 static struct bt_gatt_service service = BT_GATT_SERVICE(attrs);
 
-// **************************************************************************
-// notify_blink_program
+/**
+ * @brief Sends a notification through the program characteristic
+ *
+ * @param data String to send as notification
+ * @return int 0 on success, negative on error
+ */
 static int notify_blink_program(const char *data) {
   int err = 0;
   const struct bt_gatt_attr *attr = &attrs[SERVICE_BLINK_PROGRAM];
@@ -282,8 +355,13 @@ static int notify_blink_program(const char *data) {
   return err;
 }
 
-// **************************************************************************
-// ble_blink_init
+/**
+ * @brief Initializes the BLE Blink service
+ *
+ * @details Registers the GATT service for bytecode transfer and device control
+ *
+ * @return int 0 on success, negative on error
+ */
 int ble_blink_init() {
   int err = bt_gatt_service_register(&service);
   if (err) {
@@ -292,8 +370,12 @@ int ble_blink_init() {
   return err;
 }
 
-// **************************************************************************
-// ble_print
+/**
+ * @brief Sends a string over BLE console characteristic
+ *
+ * @param data String to send
+ * @return int 0 on success, negative on error
+ */
 int ble_print(const char *data) {
   int err = 0;
   const struct bt_gatt_attr *attr = &attrs[SERVICE_BLINK_CONSOLE];

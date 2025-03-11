@@ -2,6 +2,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file blink.c
+ * @brief Implementation of Blink bytecode management
+ * @details Implements functions for managing bytecode slots for the mruby/c
+ * virtual machine
+ */
 #include "blink.h"
 
 #include <zephyr/drivers/hwinfo.h>
@@ -16,11 +22,23 @@
 LOG_MODULE_REGISTER(app_blink, LOG_LEVEL_DBG);
 
 static void blink_countup(void);
+
+/**
+ * @brief Converts a blink slot to a storage ID
+ *
+ * @param kSlot The blink slot to convert
+ * @return storage_id_t The corresponding storage ID
+ */
 static storage_id_t slot_to_storageid(const blink_slot_t kSlot);
+
 static uint8_t bc_lz4_buf[8000] = {0};
 
-// **************************************************************************//
-// blink_get_name
+/**
+ * @brief Gets the device name with unique identifier
+ *
+ * @param name Buffer to store the device name
+ * @param kBufSize Size of the buffer
+ */
 void blink_get_name(char *const name, const size_t kBufSize) {
   char tmp_name[BLINK_DEVICE_NAME_SIZE] = {0};
   char dev_id[4 + 1] = {0};
@@ -37,8 +55,14 @@ void blink_get_name(char *const name, const size_t kBufSize) {
   return;
 }
 
-// **************************************************************************//
-// blink_load
+/**
+ * @brief Loads bytecode from the specified slot
+ *
+ * @param kSlot The slot to load from
+ * @param data Buffer to store the bytecode
+ * @param kLength Maximum length of the buffer
+ * @return ssize_t The number of bytes read, or negative on error
+ */
 ssize_t blink_load(const blink_slot_t kSlot, void *const data,
                    const size_t kLength) {
   int rc = (int)storage_read(slot_to_storageid(kSlot), bc_lz4_buf,
@@ -56,8 +80,14 @@ ssize_t blink_load(const blink_slot_t kSlot, void *const data,
   return rc;
 }
 
-// **************************************************************************
-// blink_store
+/**
+ * @brief Stores bytecode to the specified slot
+ *
+ * @param kSlot The slot to store to
+ * @param kData Pointer to the bytecode data
+ * @param kLength Length of the bytecode data
+ * @return ssize_t The number of bytes written, or negative on error
+ */
 ssize_t blink_store(const blink_slot_t kSlot, const void *const kData,
                     const size_t kLength) {
   const int kRc = LZ4_compress_default(kData, bc_lz4_buf, (int)kLength,
@@ -70,20 +100,32 @@ ssize_t blink_store(const blink_slot_t kSlot, const void *const kData,
   return storage_write(slot_to_storageid(kSlot), bc_lz4_buf, kRc);
 }
 
-// **************************************************************************
-// blink_get_data_length
+/**
+ * @brief Gets the length of bytecode in the specified slot
+ *
+ * @param kSlot The slot to check
+ * @return ssize_t The length of the bytecode, or negative on error
+ */
 ssize_t blink_get_data_length(const blink_slot_t kSlot) {
   return storage_get_data_length(slot_to_storageid(kSlot));
 }
 
-// **************************************************************************
-// blink_delete
+/**
+ * @brief Deletes bytecode from the specified slot
+ *
+ * @param kSlot The slot to delete
+ * @return int 0 on success, negative on error
+ */
 int blink_delete(const blink_slot_t kSlot) {
   return storage_delete(slot_to_storageid(kSlot));
 }
 
-// **************************************************************************
-// slot_to_storageid
+/**
+ * @brief Converts a blink slot to a storage ID
+ *
+ * @param kSlot The blink slot to convert
+ * @return storage_id_t The corresponding storage ID
+ */
 static storage_id_t slot_to_storageid(const blink_slot_t kSlot) {
   switch (kSlot) {
     case kBlinkSlot1:
