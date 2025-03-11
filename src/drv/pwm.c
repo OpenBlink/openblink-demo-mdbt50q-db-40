@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file pwm.c
+ * @brief Implementation of PWM driver
+ * @details Implements functions for PWM control
+ */
 #include "pwm.h"
 
 #include <stdbool.h>
@@ -16,7 +21,13 @@ LOG_MODULE_REGISTER(drv_pwm, LOG_LEVEL_DBG);
 
 static const struct device *pwm1_dev = DEVICE_DT_GET(DT_NODELABEL(pwm1));
 
-// drv_pwm_set
+/**
+ * @brief Sets the PWM frequency and duty cycle
+ *
+ * @param kHz Frequency in kHz
+ * @param kDuty Duty cycle (0-100)
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t drv_pwm_set(const uint32_t kHz, const uint8_t kDuty) {
   int err;
   if (100 < kDuty) {

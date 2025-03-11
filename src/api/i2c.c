@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file i2c.c
+ * @brief Implementation of I2C API for mruby/c
+ * @details Implements the I2C class and methods for mruby/c scripts
+ */
 #include "i2c.h"
 
 #include <zephyr/device.h>
@@ -15,13 +20,19 @@ LOG_MODULE_REGISTER(api_i2c, LOG_LEVEL_WRN);
 
 static const struct device *i2c_dev = DEVICE_DT_GET(DT_NODELABEL(i2c0));
 
-// **************************************************************************
-// forward declaration
+/**
+ * @brief Forward declarations for I2C methods
+ */
 static void c_i2c_read(mrb_vm *vm, mrb_value *v, int argc);
 static void c_i2c_write(mrb_vm *vm, mrb_value *v, int argc);
 
-// **************************************************************************
-// api_i2c_init
+/**
+ * @brief Initializes the I2C subsystem
+ *
+ * @details Configures the I2C device with fast speed setting
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t api_i2c_init(void) {
   if (!device_is_ready(i2c_dev)) {
     LOG_ERR("I2C device is not ready");
@@ -37,8 +48,11 @@ fn_t api_i2c_init(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// api_i2c_define
+/**
+ * @brief Defines the I2C class and methods for mruby/c
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t api_i2c_define(void) {
   mrb_class *class_i2c;
   class_i2c = mrbc_define_class(0, "I2C", mrbc_class_object);
@@ -47,8 +61,13 @@ fn_t api_i2c_define(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// c_i2c_read
+/**
+ * @brief Reads data from an I2C device
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_i2c_read(mrb_vm *vm, mrb_value *v, int argc) {
   uint16_t device_id = 0U;
   uint8_t address = 0U;
@@ -95,8 +114,13 @@ static void c_i2c_read(mrb_vm *vm, mrb_value *v, int argc) {
   SET_RETURN(ret);
 }
 
-// **************************************************************************
-// c_i2c_write
+/**
+ * @brief Writes data to an I2C device
+ *
+ * @param vm The mruby/c VM instance
+ * @param v The value array
+ * @param argc The argument count
+ */
 static void c_i2c_write(mrb_vm *vm, mrb_value *v, int argc) {
   uint16_t device_id = 0U;
   uint8_t size = 0U;

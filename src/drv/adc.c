@@ -2,6 +2,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: Copyright (c) 2025 ViXion Inc. All Rights Reserved.
  */
+/**
+ * @file adc.c
+ * @brief Implementation of ADC driver
+ * @details Implements functions for ADC initialization and reading
+ */
 #include "adc.h"
 
 #include <stdbool.h>
@@ -22,8 +27,11 @@ static const struct adc_dt_spec adc_channels[] = {
 static uint16_t buf[ARRAY_SIZE(adc_channels)];
 static struct adc_sequence sequence[ARRAY_SIZE(adc_channels)];
 
-// **************************************************************************
-// drv_gpio_init
+/**
+ * @brief Initializes the ADC subsystem
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t drv_adc_init(void) {
   int err;
   /* Configure channels individually prior to sampling. */
@@ -46,8 +54,11 @@ fn_t drv_adc_init(void) {
   return kSuccess;
 }
 
-// **************************************************************************
-// drv_adc_update
+/**
+ * @brief Updates all ADC channel readings
+ *
+ * @return fn_t kSuccess if successful, kFailure otherwise
+ */
 fn_t drv_adc_update(void) {
   fn_t ret = kSuccess;
   int err;
@@ -62,8 +73,12 @@ fn_t drv_adc_update(void) {
   return ret;
 }
 
-// **************************************************************************
-// drv_adc_get
+/**
+ * @brief Gets the value of an ADC channel
+ *
+ * @param kIdx Index of the ADC channel to read
+ * @return int32_t ADC reading in millivolts, or negative on error
+ */
 int32_t drv_adc_get(const uint8_t kIdx) {
   int err;
   int32_t val_mv;
