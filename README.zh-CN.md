@@ -23,6 +23,12 @@ $ git submodule init
 $ git submodule update
 ```
 
+## 文档
+
+有关更详细的文档，请查看[doc](./doc)
+
+如需查阅AI驱动的全面文档以帮助您理解代码库，请访问[DeepWiki](https://deepwiki.com/OpenBlink/openblink-demo-mdbt50q-db-40)
+
 ## 已验证的硬件
 
 以下硬件平台已通过 OpenBlink 测试：
