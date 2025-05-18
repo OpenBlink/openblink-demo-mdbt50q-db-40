@@ -23,6 +23,12 @@ $ git submodule init
 $ git submodule update
 ```
 
+## ドキュメント
+
+より詳細なドキュメントについては、[doc](./doc)をご確認ください。
+
+コードベースの理解を助けるAI駆動の包括的なドキュメントは、[DeepWiki](https://deepwiki.com/OpenBlink/openblink-demo-mdbt50q-db-40)をご覧ください。
+
 ## 検証済みハードウェア
 
 以下のハードウェアプラットフォームが OpenBlink でテスト済みです：
